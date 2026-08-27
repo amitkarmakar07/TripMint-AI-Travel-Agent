@@ -72,6 +72,18 @@ This document logs all major and minor technical decisions, fixes, and architect
 - **Decision:** Updated `templates.TemplateResponse` call in `home()` to use keyword parameters: `request=request, name="index.html", context={"name": "TripMint"}`.
 - **Reason:** Fixes a `TypeError: unhashable type: 'dict'` crash in Starlette >= 0.28+ when calling positional dictionary parameters, resolving the HTTP 500 Internal Server Error on `GET /`.
 
+---
+
+## 10. Containerization & Docker Setup (`Dockerfile`, `.dockerignore`)
+- **Decision:**
+  - Standardized filename casing to standard `Dockerfile`.
+  - Corrected `apt-get install -y` typo (`intall` ➡️ `install`).
+  - Fixed `COPY requirements.txt .` filename typo (`requirments.txt`).
+  - Corrected CMD entry point to `"app:app"` (`"app.app:app"` ➡️ `"app:app"`).
+  - Updated `.dockerignore` to exclude `.git`, `.env`, virtualenvs, and cache binaries.
+- **Reason:** Ensures error-free multi-platform Docker container builds for cloud deployments (AWS, Docker Hub, Render, GCP).
+
+
 
 
 
