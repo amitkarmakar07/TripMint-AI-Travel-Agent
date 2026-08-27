@@ -49,3 +49,14 @@ This document logs all major and minor technical decisions, fixes, and architect
 ## 6. Execution & Encoding (`test.py`)
 - **Decision:** Wrapped `sys.stdout` with a UTF-8 text encoder (`encoding='utf-8'`).
 - **Reason:** Resolves Windows terminal `UnicodeEncodeError` when rendering emojis (✈️, 🏨, ⛩️) and non-ASCII characters in AI outputs.
+
+---
+
+## 7. Web Application & Frontend Architecture (`app.py`, `index.html`, `style.css`, `script.js`)
+- **Decision:**
+  - Configured FastAPI with `BASE_DIR = Path(__file__).resolve().parent` for relative static asset (`/static`) and template (`/templates`) mounting.
+  - Implemented `POST /api/plan` endpoint connected to `run_travel_agent()`.
+  - Built a modern dark glassmorphic UI (`index.html` + `style.css`) with tabbed outputs (Master Plan, Live Flights, Hotels, Itinerary), agent progress simulation steps, and Markdown rendering using `marked.js`.
+- **Reason:** Provides a sleek, responsive, wow-factor web UI for end-users, isolates agent outputs into clean inspectable tabs, and preserves `thread_id` in `localStorage` for multi-turn session continuity.
+
+

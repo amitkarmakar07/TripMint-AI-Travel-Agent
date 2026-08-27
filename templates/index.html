@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TripMint - Autonomous Multi-Agent AI Travel Agent for Live Flights, Hotels, and Custom Itineraries">
+    <title>TripMint | AI Travel Agent</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-compass-drafting logo-icon"></i>
+                <span class="logo-text">TripMint <span class="badge-ai">AI</span></span>
+            </div>
+            <div class="nav-right">
+                <span class="system-status"><span class="pulse-dot"></span> Multi-Agent Graph Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Plan Your Dream Journey in Seconds</h1>
+            <p class="hero-subtitle">Powered by LangGraph multi-agent AI, live flight status APIs, and smart hotel search.</p>
+
+            <!-- Search Form -->
+            <div class="search-card">
+                <form id="travel-form">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-location-dot input-icon"></i>
+                        <textarea 
+                            id="query-input" 
+                            rows="2" 
+                            placeholder="Where do you want to travel? (e.g., Plan a 7 days trip to Japan from India under budget)" 
+                            required></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <div class="quick-prompts">
+                            <span class="chip-label">Suggestions:</span>
+                            <button type="button" class="prompt-chip" data-prompt="Plan a 7 days trip to Japan from India">🇯🇵 Japan from India</button>
+                            <button type="button" class="prompt-chip" data-prompt="5 days budget trip to Paris from Delhi">🇫🇷 Paris from Delhi</button>
+                            <button type="button" class="prompt-chip" data-prompt="3 days weekend getaway to Dubai from Mumbai">🇦🇪 Dubai from Mumbai</button>
+                        </div>
+                        <button type="submit" id="submit-btn" class="btn-primary">
+                            <span id="btn-text"><i class="fa-solid fa-paper-plane"></i> Generate Plan</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Loading State -->
+        <section id="loading-section" class="loading-card hidden">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <i class="fa-solid fa-plane-up plane-spin"></i>
+            </div>
+            <h3 class="loading-title">Orchestrating Multi-Agent Workflow...</h3>
+            <p id="loading-step" class="loading-subtext">Executing flight_agent ➡️ hotel_agent ➡️ itinerary_agent ➡️ master_agent</p>
+
+            <div class="progress-bar-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div class="agent-steps">
+                <div class="step-item" id="step-flight"><i class="fa-solid fa-plane"></i> Flight Agent</div>
+                <div class="step-item" id="step-hotel"><i class="fa-solid fa-hotel"></i> Hotel Agent</div>
+                <div class="step-item" id="step-itinerary"><i class="fa-solid fa-calendar-days"></i> Itinerary Agent</div>
+                <div class="step-item" id="step-master"><i class="fa-solid fa-wand-magic-sparkles"></i> Master Synthesis</div>
+            </div>
+        </section>
+
+        <!-- Error Container -->
+        <div id="error-card" class="error-card hidden">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="error-message">An error occurred. Please try again.</span>
+        </div>
+
+        <!-- Results Section -->
+        <section id="results-section" class="results-container hidden">
+            <div class="results-header">
+                <div class="meta-info">
+                    <span class="meta-badge"><i class="fa-solid fa-hashtag"></i> Thread: <strong id="res-thread-id">-</strong></span>
+                    <span class="meta-badge"><i class="fa-solid fa-microchip"></i> LLM Calls: <strong id="res-llm-calls">0</strong></span>
+                </div>
+                <div class="header-actions">
+                    <button id="copy-btn" class="btn-secondary"><i class="fa-regular fa-copy"></i> Copy Plan</button>
+                    <button id="reset-btn" class="btn-secondary"><i class="fa-solid fa-rotate-right"></i> New Search</button>
+                </div>
+            </div>
+
+            <!-- Result Tabs -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="tab-master"><i class="fa-solid fa-sparkles"></i> Final Trip Plan</button>
+                <button class="tab-btn" data-tab="tab-flights"><i class="fa-solid fa-plane-departure"></i> Live Flights</button>
+                <button class="tab-btn" data-tab="tab-hotels"><i class="fa-solid fa-hotel"></i> Hotel Recommendations</button>
+                <button class="tab-btn" data-tab="tab-itinerary"><i class="fa-solid fa-calendar-week"></i> Detailed Itinerary</button>
+            </div>
+
+            <!-- Tab Content Area -->
+            <div class="tab-content-wrapper">
+                <div id="tab-master" class="tab-content active">
+                    <div id="master-plan-output" class="markdown-body"></div>
+                </div>
+                <div id="tab-flights" class="tab-content">
+                    <pre id="flight-output" class="raw-output"></pre>
+                </div>
+                <div id="tab-hotels" class="tab-content">
+                    <pre id="hotel-output" class="raw-output"></pre>
+                </div>
+                <div id="tab-itinerary" class="tab-content">
+                    <div id="itinerary-output" class="markdown-body"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">Copied to clipboard!</div>
+
+    <!-- Markdown Parser (Marked.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Custom Script -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
