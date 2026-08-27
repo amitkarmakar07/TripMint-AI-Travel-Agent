@@ -66,5 +66,12 @@ This document logs all major and minor technical decisions, fixes, and architect
   - Updated `script.js` fetch payload to send `{ message: userQuery, thread_id: currentThreadId }` to `/api/travel_planner`.
 - **Reason:** Keeps frontend and backend Pydantic validation 100% aligned, preventing `422 Unprocessable Entity` or `AttributeError` schema mismatches.
 
+---
+
+## 9. Template Response Keyword Fix (`app.py`)
+- **Decision:** Updated `templates.TemplateResponse` call in `home()` to use keyword parameters: `request=request, name="index.html", context={"name": "TripMint"}`.
+- **Reason:** Fixes a `TypeError: unhashable type: 'dict'` crash in Starlette >= 0.28+ when calling positional dictionary parameters, resolving the HTTP 500 Internal Server Error on `GET /`.
+
+
 
 
