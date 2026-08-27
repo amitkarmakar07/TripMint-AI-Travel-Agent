@@ -29,39 +29,64 @@ templates = Jinja2Templates(
 )
 
 
-class TripRequest(BaseModel):
-    query: str
+class TravelRequest(BaseModel):
+    message: str
     thread_id: Optional[str] = None
 
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def home(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "name": "TripMint"}
+    )
 
 
-@app.post("/api/plan")
-async def plan_trip(trip_req: TripRequest):
+@app.post("/api/travel_planner")
+async def travel_planner(request_data: TravelRequest):
     try:
-        if not trip_req.query or not trip_req.query.strip():
+        user_message = request_data.message.strip()
+
+        if not user_message:
             return JSONResponse(
                 status_code=400,
-                content={"error": "Travel request cannot be empty."}
+                content={"error": "User message cannot be empty."}
             )
 
         result = run_travel_agent(
-            user_input=trip_req.query.strip(),
-            thread_id=trip_req.thread_id
+            user_input=user_message,
+            thread_id=request_data.thread_id
         )
 
-        return JSONResponse(status_code=200, content=result)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "answer": result.get("answer", "No answer found"),
+                "flight_results": result.get("flight_results", "no flight results found"),
+                "hotel_results": result.get("hotel_results", "no hotel results found"),
+                "itinerary": result.get("itinerary", "no itinerary found"),
+                "thread_id": result.get("thread_id", "no thread id found"),
+                "llm_calls": result.get("llm_calls", 0),
+            }
+        )
 
     except Exception as e:
         error_details = traceback.format_exc()
-        print(f"Error in /api/plan: {error_details}")
+        print(f"Error in /api/travel_planner: {error_details}")
         return JSONResponse(
             status_code=500,
-            content={"error": f"An error occurred while generating your trip plan: {str(e)}"}
+            content={"error": f"Error generating travel plan: {str(e)}"}
         )
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    return JSONResponse(content={})
 
 
 if __name__ == "__main__":

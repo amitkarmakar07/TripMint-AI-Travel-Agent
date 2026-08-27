@@ -67,13 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
         simulateProgress();
 
         try {
-            const response = await fetch('/api/plan', {
+            const response = await fetch('/api/travel_planner', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    query: userQuery,
+                    message: userQuery,
                     thread_id: currentThreadId
                 })
             });
