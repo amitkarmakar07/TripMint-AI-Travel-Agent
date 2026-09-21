@@ -3,69 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="TripMint - Autonomous Multi-Agent AI Travel Agent for Live Flights, Hotels, and Custom Itineraries">
-    <title>TripMint | AI Travel Agent</title>
+    <meta name="description" content="TripMint AI - Autonomous Multi-Agent Travel Concierge for Flights, Hotels, Weather, Budgets, and Day-by-Day Itineraries">
+    <title>TripMint AI | Luxury Multi-Agent Travel Concierge</title>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/style.css">
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/style.css?v=20260921">
 </head>
 <body>
     <div class="glow-bg"></div>
 
-    <!-- Navigation Header -->
-    <header class="navbar">
-        <div class="nav-container">
+    <!-- Minimal Top Header without Navbar Menu -->
+    <header class="navbar-minimal">
+        <div class="nav-minimal-container">
             <div class="logo">
-                <i class="fa-solid fa-compass-drafting logo-icon"></i>
-                <span class="logo-text">TripMint <span class="badge-ai">AI</span></span>
+                <div class="logo-badge-icon">
+                    <i class="fa-solid fa-compass"></i>
+                </div>
+                <span class="logo-text">TripMint <span class="badge-ai">AI 2.0</span></span>
             </div>
-            <div class="nav-right">
-                <span class="system-status"><span class="pulse-dot"></span> Multi-Agent Graph Ready</span>
+            <div class="nav-minimal-right">
+                <span class="system-status"><span class="pulse-dot"></span> MULTI-AGENT GRAPH ACTIVE</span>
             </div>
         </div>
     </header>
 
-    <main class="main-container">
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <h1 class="hero-title">Plan Your Dream Journey in Seconds</h1>
-            <p class="hero-subtitle">Powered by LangGraph multi-agent AI, live flight status APIs, and smart hotel search.</p>
+    <!-- Forest Green 2-Column Hero Section -->
+    <section class="hero-green-section" id="concierge">
+        <div class="hero-green-container">
+            <!-- Left Column: Content & Search -->
+            <div class="hero-green-left">
+                <h1 class="hero-green-title">
+                    Live Your<br>
+                    <span class="hero-green-accent">Adventure.</span>
+                </h1>
+                <p class="hero-green-subtitle">
+                    Explore breathtaking places and create unforgettable memories around the world.
+                </p>
 
-            <!-- Search Form -->
-            <div class="search-card">
-                <form id="travel-form">
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-location-dot input-icon"></i>
-                        <textarea 
-                            id="query-input" 
-                            rows="2" 
-                            placeholder="Where do you want to travel? (e.g., Plan a 7 days trip to Japan from India under budget)" 
-                            required></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <div class="quick-prompts">
-                            <span class="chip-label">Suggestions:</span>
-                            <button type="button" class="prompt-chip" data-prompt="Plan a 7 days trip to Japan from India">🇯🇵 Japan from India</button>
-                            <button type="button" class="prompt-chip" data-prompt="5 days budget trip to Paris from Delhi">🇫🇷 Paris from Delhi</button>
-                            <button type="button" class="prompt-chip" data-prompt="3 days weekend getaway to Dubai from Mumbai">🇦🇪 Dubai from Mumbai</button>
+                <!-- Floating Rounded Search Capsule -->
+                <form id="travel-form" class="search-capsule-form">
+                    <div class="search-capsule">
+                        <div class="capsule-field where-field">
+                            <i class="fa-solid fa-location-dot capsule-icon"></i>
+                            <input 
+                                type="text" 
+                                id="query-input" 
+                                placeholder="Where to? (e.g. 6-day luxury trip to Sofia & Bansko Bulgaria)" 
+                                required autocomplete="off">
                         </div>
-                        <button type="submit" id="submit-btn" class="btn-primary">
-                            <span id="btn-text"><i class="fa-solid fa-paper-plane"></i> Generate Plan</span>
+                        <div class="capsule-divider"></div>
+                        <div class="capsule-field date-field">
+                            <i class="fa-regular fa-calendar capsule-icon"></i>
+                            <input type="text" id="date-input" placeholder="Date Range" readonly value="Flexible Dates">
+                        </div>
+                        <button type="submit" id="submit-btn" class="capsule-btn">
+                            <span id="btn-text">Search</span>
                         </button>
                     </div>
+
+                    <!-- Quick Prompt Pills -->
+                    <div class="hero-quick-prompts">
+                        <span class="quick-label">POPULAR:</span>
+                        <button type="button" class="prompt-chip" data-prompt="Plan a 6 days luxury trip from Mumbai, India to Sofia & Bansko, Bulgaria under ₹30 Lakh budget for 2 adults">Sofia & Bansko</button>
+                        <button type="button" class="prompt-chip" data-prompt="Plan a 7 days trip to Japan from Mumbai under 1.5 Lakh budget">Tokyo & Kyoto</button>
+                        <button type="button" class="prompt-chip" data-prompt="3 days weekend budget trip to Goa from Bangalore">Goa Retreat</button>
+                        <button type="button" class="prompt-chip" data-prompt="5 days romantic holiday to French Riviera & Nice from Delhi">French Riviera</button>
+                    </div>
                 </form>
+
+                <!-- 3 Hero Feature Cards (Exact to Mockup) -->
+                <div class="hero-feature-trio">
+                    <div class="feat-trio-card">
+                        <div class="feat-trio-icon"><i class="fa-solid fa-tent"></i></div>
+                        <div class="feat-trio-info">
+                            <h4 class="feat-trio-title">Expert Guides</h4>
+                            <p class="feat-trio-desc">Local insights & travel tips</p>
+                        </div>
+                    </div>
+                    <div class="feat-trio-card">
+                        <div class="feat-trio-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="feat-trio-info">
+                            <h4 class="feat-trio-title">Tailored Itineraries</h4>
+                            <p class="feat-trio-desc">Custom plans for every traveler</p>
+                        </div>
+                    </div>
+                    <div class="feat-trio-card">
+                        <div class="feat-trio-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="feat-trio-info">
+                            <h4 class="feat-trio-title">Best Price Guarantee</h4>
+                            <p class="feat-trio-desc">Top deals for your next adventure</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Large Curved Traveler Photo -->
+            <div class="hero-green-right">
+                <div class="hero-photo-frame">
+                    <img src="/static/hero_hiker.jpg" alt="Smiling female hiker looking over mountain lake fjord" class="hero-photo-img">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-container">
+
+        <!-- Popular Destinations Section (Exact to Mockup) -->
+        <section class="destinations-section">
+            <div class="destinations-header-row">
+                <h2 class="destinations-main-title">Popular Destinations</h2>
+                <div class="destinations-nav-arrows">
+                    <button type="button" class="nav-arrow-btn" id="dest-prev" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button type="button" class="nav-arrow-btn" id="dest-next" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="destinations-grid-trio">
+                <!-- Card 1: El Nido, Philippines -->
+                <div class="destination-trio-card" data-prompt="Plan a 6 days tropical adventure to El Nido, Palawan Philippines with island hopping, lagoons, and boutique eco-resorts under $899">
+                    <div class="trio-card-media">
+                        <img src="/static/dest_elnido.jpg" alt="El Nido, Philippines" loading="lazy">
+                        <span class="trio-rating-pill"><i class="fa-solid fa-star"></i> 4.9</span>
+                        <button type="button" class="trio-heart-btn" aria-label="Save"><i class="fa-regular fa-heart"></i></button>
+                    </div>
+                    <div class="trio-card-body">
+                        <div class="trio-title-row">
+                            <div>
+                                <h3 class="trio-place-title">El Nido, Philippines</h3>
+                                <p class="trio-place-sub">Tropical Paradise</p>
+                            </div>
+                            <span class="trio-price-tag">$899</span>
+                        </div>
+                        <div class="trio-card-footer">
+                            <div class="trio-travelers">
+                                <div class="traveler-avatars">
+                                    <span class="avatar-circle av-1"><i class="fa-solid fa-user"></i></span>
+                                    <span class="avatar-circle av-2"><i class="fa-solid fa-user"></i></span>
+                                    <span class="avatar-circle av-3"><i class="fa-solid fa-user"></i></span>
+                                </div>
+                                <span class="travelers-count">230+ Travelers</span>
+                            </div>
+                            <button type="button" class="trio-action-btn">Explore Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Santorini, Greece -->
+                <div class="destination-trio-card" data-prompt="Plan a 5 days romantic getaway to Santorini, Greece with caldera sunset views, wine tasting, and cliffside cave suites under $1099">
+                    <div class="trio-card-media">
+                        <img src="/static/dest_santorini.jpg" alt="Santorini, Greece" loading="lazy">
+                        <span class="trio-rating-pill"><i class="fa-solid fa-star"></i> 4.7</span>
+                        <button type="button" class="trio-heart-btn" aria-label="Save"><i class="fa-regular fa-heart"></i></button>
+                    </div>
+                    <div class="trio-card-body">
+                        <div class="trio-title-row">
+                            <div>
+                                <h3 class="trio-place-title">Santorini, Greece</h3>
+                                <p class="trio-place-sub">Island of Romance</p>
+                            </div>
+                            <span class="trio-price-tag">$1099</span>
+                        </div>
+                        <div class="trio-card-footer">
+                            <div class="trio-travelers">
+                                <div class="traveler-avatars">
+                                    <span class="avatar-circle av-1"><i class="fa-solid fa-user"></i></span>
+                                    <span class="avatar-circle av-2"><i class="fa-solid fa-user"></i></span>
+                                    <span class="avatar-circle av-3"><i class="fa-solid fa-user"></i></span>
+                                </div>
+                                <span class="travelers-count">180+ Travelers</span>
+                            </div>
+                            <button type="button" class="trio-action-btn">Explore Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Iceland -->
+                <div class="destination-trio-card" data-prompt="Plan a 7 days winter road trip across Iceland exploring Northern Lights, ice caves, geothermal hot springs, and glacier lagoons under $1299">
+                    <div class="trio-card-media">
+                        <img src="/static/dest_iceland.jpg" alt="Iceland" loading="lazy">
+                        <span class="trio-rating-pill"><i class="fa-solid fa-star"></i> 4.6</span>
+                        <button type="button" class="trio-heart-btn" aria-label="Save"><i class="fa-regular fa-heart"></i></button>
+                    </div>
+                    <div class="trio-card-body">
+                        <div class="trio-title-row">
+                            <div>
+                                <h3 class="trio-place-title">Iceland</h3>
+                                <p class="trio-place-sub">Land of Fire & Ice</p>
+                            </div>
+                            <span class="trio-price-tag">$1299</span>
+                        </div>
+                        <div class="trio-card-footer">
+                            <div class="trio-travelers">
+                                <div class="traveler-avatars">
+                                    <span class="avatar-circle av-1"><i class="fa-solid fa-user"></i></span>
+                                    <span class="avatar-circle av-2"><i class="fa-solid fa-user"></i></span>
+                                    <span class="avatar-circle av-3"><i class="fa-solid fa-user"></i></span>
+                                </div>
+                                <span class="travelers-count">315+ Travelers</span>
+                            </div>
+                            <button type="button" class="trio-action-btn">Explore Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dots Indicator -->
+            <div class="destinations-dots-indicator">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
             </div>
         </section>
-
         <!-- Loading State -->
         <section id="loading-section" class="loading-card hidden">
             <div class="spinner-container">
@@ -73,17 +229,58 @@
                 <i class="fa-solid fa-plane-up plane-spin"></i>
             </div>
             <h3 class="loading-title">Orchestrating Multi-Agent Workflow...</h3>
-            <p id="loading-step" class="loading-subtext">Executing flight_agent ➡️ hotel_agent ➡️ itinerary_agent ➡️ master_agent</p>
+            <p id="loading-subtext" class="loading-subtext">Executing Guardrail ➡️ Supervisor ➡️ Specialists ➡️ Synthesis</p>
 
             <div class="progress-bar-container">
                 <div id="progress-bar" class="progress-bar"></div>
             </div>
 
             <div class="agent-steps">
+                <div class="step-item" id="step-supervisor"><i class="fa-solid fa-shield-halved"></i> Guardrail & Supervisor</div>
                 <div class="step-item" id="step-flight"><i class="fa-solid fa-plane"></i> Flight Agent</div>
                 <div class="step-item" id="step-hotel"><i class="fa-solid fa-hotel"></i> Hotel Agent</div>
-                <div class="step-item" id="step-itinerary"><i class="fa-solid fa-calendar-days"></i> Itinerary Agent</div>
+                <div class="step-item" id="step-weather"><i class="fa-solid fa-cloud-sun"></i> Weather Agent</div>
+                <div class="step-item" id="step-budget"><i class="fa-solid fa-wallet"></i> Budget Agent</div>
+                <div class="step-item" id="step-itinerary"><i class="fa-solid fa-calendar-days"></i> Itinerary Draft</div>
                 <div class="step-item" id="step-master"><i class="fa-solid fa-wand-magic-sparkles"></i> Master Synthesis</div>
+            </div>
+        </section>
+
+        <!-- Human in the Loop Approval Card -->
+        <section id="approval-card" class="approval-card hidden">
+            <div class="approval-header">
+                <div class="approval-title-wrap">
+                    <i class="fa-solid fa-user-check approval-icon"></i>
+                    <div>
+                        <h3 class="approval-title">Human-in-the-Loop Review</h3>
+                        <p class="approval-subtitle">The agent has drafted an itinerary. Please review and approve or suggest changes.</p>
+                    </div>
+                </div>
+                <span class="badge-pending"><i class="fa-solid fa-pause"></i> Paused for Approval</span>
+            </div>
+
+            <div class="draft-preview-box">
+                <h4><i class="fa-solid fa-file-lines"></i> Draft Itinerary Preview</h4>
+                <div id="draft-itinerary-preview" class="markdown-body"></div>
+            </div>
+
+            <div class="approval-feedback-section">
+                <label for="approval-feedback-input" class="feedback-label">
+                    <i class="fa-solid fa-comment-dots"></i> Feedback or Adjustments (Optional if approving):
+                </label>
+                <textarea 
+                    id="approval-feedback-input" 
+                    rows="2" 
+                    placeholder="e.g., 'Make day 3 more relaxed' or 'Add vegetarian street food recommendations'"></textarea>
+
+                <div class="approval-actions">
+                    <button id="btn-approve" class="btn-approve">
+                        <i class="fa-solid fa-check"></i> Approve & Finalize
+                    </button>
+                    <button id="btn-revise" class="btn-revise">
+                        <i class="fa-solid fa-pen-to-square"></i> Request Revision
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -99,6 +296,7 @@
                 <div class="meta-info">
                     <span class="meta-badge"><i class="fa-solid fa-hashtag"></i> Thread: <strong id="res-thread-id">-</strong></span>
                     <span class="meta-badge"><i class="fa-solid fa-microchip"></i> LLM Calls: <strong id="res-llm-calls">0</strong></span>
+                    <span id="res-agents-badge" class="meta-badge"><i class="fa-solid fa-network-wired"></i> <span id="res-agents-text">All Agents</span></span>
                 </div>
                 <div class="header-actions">
                     <button id="copy-btn" class="btn-secondary"><i class="fa-regular fa-copy"></i> Copy Plan</button>
@@ -108,10 +306,12 @@
 
             <!-- Result Tabs -->
             <div class="tab-navigation">
-                <button class="tab-btn active" data-tab="tab-master"><i class="fa-solid fa-sparkles"></i> Final Trip Plan</button>
-                <button class="tab-btn" data-tab="tab-flights"><i class="fa-solid fa-plane-departure"></i> Live Flights</button>
-                <button class="tab-btn" data-tab="tab-hotels"><i class="fa-solid fa-hotel"></i> Hotel Recommendations</button>
-                <button class="tab-btn" data-tab="tab-itinerary"><i class="fa-solid fa-calendar-week"></i> Detailed Itinerary</button>
+                <button class="tab-btn active" id="tab-btn-master" data-tab="tab-master"><i class="fa-solid fa-wand-magic-sparkles"></i> Final Trip Plan</button>
+                <button class="tab-btn" id="tab-btn-flights" data-tab="tab-flights"><i class="fa-solid fa-plane-departure"></i> Flights</button>
+                <button class="tab-btn" id="tab-btn-hotels" data-tab="tab-hotels"><i class="fa-solid fa-hotel"></i> Hotels</button>
+                <button class="tab-btn" id="tab-btn-weather" data-tab="tab-weather"><i class="fa-solid fa-cloud-sun"></i> Weather</button>
+                <button class="tab-btn" id="tab-btn-budget" data-tab="tab-budget"><i class="fa-solid fa-wallet"></i> Budget Analysis</button>
+                <button class="tab-btn" id="tab-btn-itinerary" data-tab="tab-itinerary"><i class="fa-solid fa-calendar-week"></i> Detailed Itinerary</button>
             </div>
 
             <!-- Tab Content Area -->
@@ -120,10 +320,16 @@
                     <div id="master-plan-output" class="markdown-body"></div>
                 </div>
                 <div id="tab-flights" class="tab-content">
-                    <pre id="flight-output" class="raw-output"></pre>
+                    <div id="flight-output" class="markdown-body"></div>
                 </div>
                 <div id="tab-hotels" class="tab-content">
-                    <pre id="hotel-output" class="raw-output"></pre>
+                    <div id="hotel-output" class="markdown-body"></div>
+                </div>
+                <div id="tab-weather" class="tab-content">
+                    <div id="weather-output" class="markdown-body"></div>
+                </div>
+                <div id="tab-budget" class="tab-content">
+                    <div id="budget-output" class="markdown-body"></div>
                 </div>
                 <div id="tab-itinerary" class="tab-content">
                     <div id="itinerary-output" class="markdown-body"></div>
@@ -138,6 +344,6 @@
     <!-- Markdown Parser (Marked.js) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Custom Script -->
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=20260921"></script>
 </body>
 </html>

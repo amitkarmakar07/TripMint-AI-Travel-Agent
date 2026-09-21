@@ -1,13 +1,12 @@
-import sys
-import io
+import asyncio
+# from mcp_client_test import get_all_tools
+from mcp_clients import client
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+async def gettools() :
+    tools = await client.get_tools()
+    for tool in tools :
+        print(tool.name)
 
-from tools.tavily_tool import tavily_search
-from tools.flight_tool import search_flights
-from backend import run_travel_agent
-
-res = run_travel_agent(user_input="Plan a 7 days trip to Japan from India")
-print(res["answer"])
-
+if __name__ == "__main__" :
+    asyncio.run(gettools())
 

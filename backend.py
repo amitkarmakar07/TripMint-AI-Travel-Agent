@@ -1,213 +1,218 @@
-import os
 import uuid
-import operator
-import certifi
-import psycopg
-from typing import TypedDict, Annotated
-from psycopg.rows import dict_row
+import json
+from typing import Any, Generator
+from langchain_core.messages import HumanMessage
+from langgraph.types import Command
 
-from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.postgres import PostgresSaver
-from langchain_core.messages import AnyMessage, HumanMessage, AIMessage, SystemMessage
-from langchain_groq import ChatGroq
-
-from config import config
-from tools.tavily_tool import tavily_search
-from tools.flight_tool import search_flights
-
-# SSL Certificate Setup
-os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
-os.environ["SSL_CERT_FILE"] = certifi.where()
+from state import TravelState, empty_constraints
+from graph import travel_graph
 
 
-# Helper function to get database URL with sslmode
-def get_database_url():
-    database_url = config.DATABASE_URL
-    if not database_url:
-        raise ValueError("DATABASE_URL is not defined in the config")
-    if "sslmode=" not in database_url:
-        separator = "&" if "?" in database_url else "?"
-        database_url = f"{database_url}{separator}sslmode=require"
-    return database_url
+def extract_interrupt_payload(result: dict[str, Any]) -> dict[str, Any] | None:
+    """Extracts the interrupt payload dictionary if an interrupt was triggered."""
+    interrupts = result.get("__interrupt__", [])
+    if not interrupts:
+        return None
+    
+    first_interrupt = interrupts[0]
+    payload = getattr(first_interrupt, "value", first_interrupt)
+    return payload if isinstance(payload, dict) else {"value": payload}
 
 
-# API Key Setup for LLM
-llm_api_key = config.GROQ_API_KEY
-if not llm_api_key:
-    raise ValueError("GROQ_API_KEY not found in config")
-
-llm = ChatGroq(
-    model="qwen/qwen3.8-27b",
-    api_key=llm_api_key,
-    temperature=0.7
-)
-
-
-# Define Travel State
-class TravelState(TypedDict):
-    messages: Annotated[list[AnyMessage], operator.add]
-    user_query: str
-    flight_results: str
-    hotel_results: str
-    itinerary: str
-    llm_calls: int
-
-
-# Defining Agents
-def flight_agent(state: TravelState):
-    query = state["user_query"]
-    flight_data = search_flights(query, limit=3)
-
+def serialize_result(result: dict[str, Any], thread_id: str) -> dict[str, Any]:
+    """Serializes the graph execution output into a clean dictionary response."""
+    messages = result.get("messages", [])
+    last_message = messages[-1].content if messages else ""
+    answer = result.get("final_response") or last_message
+    interrupt_payload = extract_interrupt_payload(result)
+    
+    if interrupt_payload: 
+        answer = interrupt_payload.get("draft_itinerary") or result.get("itinerary", "")
+    
     return {
-        "flight_results": flight_data,
-        "messages": [
-            AIMessage(content="Flight results fetched successfully.")
-        ],
-        "llm_calls": state.get("llm_calls", 0) + 1
+        "thread_id": thread_id,
+        "answer": answer,
+        "requires_approval": interrupt_payload is not None,
+        "approval_request": (interrupt_payload.get("approval_request", "") if interrupt_payload else result.get("approval_request", "")),
+        "flight_results": result.get("flight_results", ""),
+        "hotel_results": result.get("hotel_results", ""),
+        "weather_result": result.get("weather_result", ""),
+        "budget_analysis": result.get("budget_analysis", ""),
+        "itinerary": (interrupt_payload.get("draft_itinerary", "") if interrupt_payload else result.get("itinerary", "")),
+        "selected_agents": result.get("selected_agents", []),
+        "trip_constraints": result.get("trip_constraints", {}),
+        "supervisor_reasoning": result.get("supervisor_reasoning", ""),
+        "guardrail_allowed": result.get("guardrail_allowed", True),
+        "guardrail_reason": result.get("guardrail_reason", ""),
+        "approved": result.get("approved", False),
+        "human_feedback": result.get("human_feedback", ""),
+        "llm_calls": result.get("llm_calls", 0)
     }
 
 
-def hotel_agent(state: TravelState):
-    query = f"Best hotels for {state['user_query']}"
-    hotel_results = tavily_search(query)
-
-    return {
-        "hotel_results": hotel_results,
-        "messages": [
-            AIMessage(content="Hotel results fetched successfully.")
-        ],
-        "llm_calls": state.get("llm_calls", 0) + 1
-    }
-
-
-def itinerary_agent(state: TravelState):
-    prompt = f"""You are a world class travel planning agent. Create a complete
-travel itinerary for the following user request.
-
-User Request:
-{state['user_query']}
-
-Flight Results:
-{state['flight_results']}
-
-Hotel Results:
-{state['hotel_results']}
-
-Make the itinerary practical, budget-aware, and easy to follow.
-"""
-
-    response = llm.invoke([
-        SystemMessage(content="You are a world class travel planning agent."),
-        HumanMessage(content=prompt)
-    ])
-
-    return {
-        "itinerary": response.content,
-        "messages": [response],
-        "llm_calls": state.get("llm_calls", 0) + 1
-    }
-
-
-def master_agent(state: TravelState):
-    final_prompt = f"""Generate the final travel response for the user.
-
-User Request: 
-{state["user_query"]}
-
-Flight Information:
-{state['flight_results']}
-
-Hotel Suggestions:
-{state['hotel_results']}
-
-Itinerary:
-{state['itinerary']}
-
-Format the final answer beautifully and clearly using these sections:
-1. Trip Summary
-2. Flight Information
-3. Hotel Suggestions
-4. Day to Day Itinerary
-5. Estimated Budget
-6. Final Recommendations
-
-Important:
-- Be clear, practical, and structured.
-- Mention that live flight API may not provide ticket prices if pricing is unavailable.
-- Keep the response useful for real travel planning.
-"""
-
-    response = llm.invoke([
-        SystemMessage(content="You are a professional AI travel booking assistant."),
-        HumanMessage(content=final_prompt)
-    ])
-
-    return {
-        "messages": [response],
-        "llm_calls": state.get("llm_calls", 0) + 1
-    }
-
-
-# Graph Builder
-graph = StateGraph(TravelState)
-
-graph.add_node("flight_agent", flight_agent)
-graph.add_node("hotel_agent", hotel_agent)
-graph.add_node("itinerary_agent", itinerary_agent)
-graph.add_node("master_agent", master_agent)
-
-graph.add_edge(START, "flight_agent")
-graph.add_edge("flight_agent", "hotel_agent")
-graph.add_edge("hotel_agent", "itinerary_agent")
-graph.add_edge("itinerary_agent", "master_agent")
-graph.add_edge("master_agent", END)
-
-
-# Postgres Checkpointer
-DATABASE_URL = get_database_url()
-
-conn = psycopg.connect(
-    DATABASE_URL,
-    autocommit=True,
-    row_factory=dict_row
-)
-
-checkpointer = PostgresSaver(conn)
-checkpointer.setup()
-
-travel_graph = graph.compile(checkpointer=checkpointer)
-
-
-# Primary function to execute the graph
-def run_travel_agent(user_input: str, thread_id: str = None):
+def run_travel_agent(user_input: str, thread_id: str | None = None) -> dict[str, Any]:
+    """Primary synchronous entry point to start a new travel planning session."""
     if not thread_id:
         thread_id = f"user_{uuid.uuid4().hex}"
-
-    run_config = {
-        "configurable": {
-            "thread_id": thread_id
-        }
-    }
-
+    
+    run_config = {"configurable": {"thread_id": thread_id}}
+    
     result = travel_graph.invoke(
         {
             "messages": [HumanMessage(content=user_input)],
             "user_query": user_input,
+            "guardrail_allowed": True,
+            "guardrail_reason": "",
+            "selected_agents": [],
+            "trip_constraints": empty_constraints(),
+            "supervisor_reasoning": "",
             "flight_results": "",
             "hotel_results": "",
+            "weather_result": "",
+            "budget_analysis": "",
             "itinerary": "",
+            "approval_request": "",
+            "approved": False,
+            "human_feedback": "",
+            "final_response": "",
             "llm_calls": 0
         },
         config=run_config
     )
+    return serialize_result(result, thread_id)
 
-    final_answer = result["messages"][-1].content
 
-    return {
-        "thread_id": thread_id,
-        "answer": final_answer,
-        "flight_results": result.get("flight_results", "results not found"),
-        "hotel_results": result.get("hotel_results", "results not found"),
-        "itinerary": result.get("itinerary", "results not found"),
-        "llm_calls": result.get("llm_calls", 0)
+def resume_travel_agent(thread_id: str, approved: bool, feedback: str = "") -> dict[str, Any]:
+    """Resumes graph execution after human approval or revision feedback."""
+    if not thread_id:
+        raise ValueError("Thread ID is required to resume travel agent")
+    
+    run_config = {"configurable": {"thread_id": thread_id}}
+    
+    result = travel_graph.invoke(
+        Command(
+            resume={
+                "approved": approved,
+                "feedback": feedback.strip(),
+            }
+        ),
+        config=run_config,
+    )
+    return serialize_result(result, thread_id)
+
+
+def stream_travel_agent(user_input: str, thread_id: str | None = None) -> Generator[str, None, None]:
+    """Server-Sent Events (SSE) streaming generator for real-time multi-agent execution."""
+    if not thread_id:
+        thread_id = f"user_{uuid.uuid4().hex}"
+    
+    run_config = {"configurable": {"thread_id": thread_id}}
+    initial_input = {
+        "messages": [HumanMessage(content=user_input)],
+        "user_query": user_input,
+        "guardrail_allowed": True,
+        "guardrail_reason": "",
+        "selected_agents": [],
+        "trip_constraints": empty_constraints(),
+        "supervisor_reasoning": "",
+        "flight_results": "",
+        "hotel_results": "",
+        "weather_result": "",
+        "budget_analysis": "",
+        "itinerary": "",
+        "approval_request": "",
+        "approved": False,
+        "human_feedback": "",
+        "final_response": "",
+        "llm_calls": 0
     }
+    
+    # Emit initial start event
+    start_payload = json.dumps({"thread_id": thread_id, "status": "started", "query": user_input})
+    yield f"event: start\ndata: {start_payload}\n\n"
+    
+    for chunk in travel_graph.stream(initial_input, config=run_config, stream_mode="updates"):
+        for node_name, node_update in chunk.items():
+            if node_name == "__interrupt__":
+                continue
+            
+            clean_update = {k: v for k, v in node_update.items() if k != "messages"}
+            evt_payload = json.dumps({
+                "node": node_name,
+                "thread_id": thread_id,
+                "update": clean_update
+            })
+            yield f"event: node_complete\ndata: {evt_payload}\n\n"
+            
+    snapshot = travel_graph.get_state(run_config)
+    interrupts = [t.interrupts for t in snapshot.tasks if t.interrupts]
+    
+    if interrupts:
+        first_interrupt = interrupts[0][0]
+        payload = getattr(first_interrupt, "value", first_interrupt)
+        interrupt_data = {
+            "thread_id": thread_id,
+            "requires_approval": True,
+            "approval_request": payload.get("approval_request", "") if isinstance(payload, dict) else "",
+            "draft_itinerary": payload.get("draft_itinerary", "") if isinstance(payload, dict) else "",
+            "itinerary": payload.get("draft_itinerary", "") if isinstance(payload, dict) else "",
+            "selected_agents": payload.get("selected_agents", []) if isinstance(payload, dict) else [],
+            "trip_constraints": snapshot.values.get("trip_constraints", {}),
+            "supervisor_reasoning": snapshot.values.get("supervisor_reasoning", ""),
+            "flight_results": snapshot.values.get("flight_results", ""),
+            "hotel_results": snapshot.values.get("hotel_results", ""),
+            "weather_result": snapshot.values.get("weather_result", ""),
+            "budget_analysis": snapshot.values.get("budget_analysis", ""),
+            "guardrail_allowed": snapshot.values.get("guardrail_allowed", True),
+            "guardrail_reason": snapshot.values.get("guardrail_reason", ""),
+            "llm_calls": snapshot.values.get("llm_calls", 0),
+            "answer": payload.get("draft_itinerary", "") if isinstance(payload, dict) else ""
+        }
+        yield f"event: interrupt\ndata: {json.dumps(interrupt_data)}\n\n"
+    else:
+        final_data = serialize_result(snapshot.values, thread_id)
+        yield f"event: complete\ndata: {json.dumps(final_data)}\n\n"
+
+
+def stream_resume_travel_agent(thread_id: str, approved: bool, feedback: str = "") -> Generator[str, None, None]:
+    """Server-Sent Events (SSE) streaming generator for resuming graph after human approval."""
+    if not thread_id:
+        raise ValueError("Thread ID is required to resume travel agent")
+    
+    run_config = {"configurable": {"thread_id": thread_id}}
+    resume_cmd = Command(
+        resume={
+            "approved": approved,
+            "feedback": feedback.strip(),
+        }
+    )
+    
+    start_payload = json.dumps({"thread_id": thread_id, "status": "resumed", "approved": approved})
+    yield f"event: start\ndata: {start_payload}\n\n"
+    
+    for chunk in travel_graph.stream(resume_cmd, config=run_config, stream_mode="updates"):
+        for node_name, node_update in chunk.items():
+            if node_name == "__interrupt__":
+                continue
+            clean_update = {k: v for k, v in node_update.items() if k != "messages"}
+            evt_payload = json.dumps({
+                "node": node_name,
+                "thread_id": thread_id,
+                "update": clean_update
+            })
+            yield f"event: node_complete\ndata: {evt_payload}\n\n"
+            
+    snapshot = travel_graph.get_state(run_config)
+    final_data = serialize_result(snapshot.values, thread_id)
+    yield f"event: complete\ndata: {json.dumps(final_data)}\n\n"
+
+
+__all__ = [
+    "run_travel_agent",
+    "resume_travel_agent",
+    "stream_travel_agent",
+    "stream_resume_travel_agent",
+    "travel_graph",
+    "TravelState",
+    "empty_constraints"
+]

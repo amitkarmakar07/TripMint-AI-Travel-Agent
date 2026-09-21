@@ -13,6 +13,10 @@ class config:
     LANGSMITH_ENDPOINT = os.getenv("LANGSMITH_ENDPOINT")
     LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
     LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+    REDIS_URL = os.getenv("REDIS_URL")
+
 
 
 config = config()
