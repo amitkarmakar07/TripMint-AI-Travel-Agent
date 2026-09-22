@@ -82,20 +82,24 @@ class ApprovalResumeRequest(BaseModel):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={"name": "TripMint"}
-    )
-
-
 @app.get("/home", response_class=HTMLResponse)
 async def home_scroll(request: Request):
+    """Primary domain landing page with luxury video scroll animation."""
     return templates.TemplateResponse(
         request=request,
         name="home.html",
         context={}
+    )
+
+
+@app.get("/planner", response_class=HTMLResponse)
+@app.get("/plan", response_class=HTMLResponse)
+async def planner_app(request: Request):
+    """Autonomous AI multi-agent travel concierge and itinerary planner."""
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"name": "TripMint"}
     )
 
 

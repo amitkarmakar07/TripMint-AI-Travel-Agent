@@ -397,3 +397,14 @@ This document logs all major and minor technical decisions, fixes, and architect
     - Removed fixed internal scrollbars (`overflow-y: hidden`) and implemented a dynamic auto-resizing engine in `static/script.js` (`autoResizeTextarea`) that recalculates `scrollHeight` on every keystroke, chip click, paste, and reset.
     - The search capsule naturally expands vertically as long prompts are typed, allowing 2, 4, 6, or more lines to stay completely visible without requiring users to scroll inside the input box.
 - **Reason:** Delivers immediate, unmistakable visual feedback for safety policy blocks and provides a smooth, modern textarea experience that grows with user input.
+
+---
+
+## 33. Root Landing Page Architecture (`app.py`, `templates/home.html`, `templates/index.html`)
+- **Decision:**
+  - **Root Route (`/` and `/home`):** Configured FastAPI to serve `home.html` (the luxury video scroll canvas animation) as the primary entry point when visiting the base domain.
+  - **Planner Route (`/planner` and `/plan`):** Configured `index.html` (the multi-agent travel concierge) on dedicated `/planner` and `/plan` routes.
+  - **Bidirectional Seamless Navigation:**
+    - All "Explore Trips" CTA buttons and tour destination cards across `templates/home.html` navigate cleanly to `/planner`.
+    - The top logo in `templates/index.html` links directly back to `/` so travelers can return to the cinematic landing page at any time.
+- **Reason:** Establishes the scroll-driven visual experience as the primary landing page while providing smooth navigation into the functional AI planning application.
