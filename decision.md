@@ -369,3 +369,16 @@ This document logs all major and minor technical decisions, fixes, and architect
     4. **Linear Token Scaling:**
        - Token consumption scales smoothly and predictably with itinerary duration (~1.2K – 1.5K tokens per additional day), with no runaway context loops.
 - **Reason:** Validates production viability, unit economics, and latency performance of the TripMint multi-agent graph architecture.
+
+---
+
+## 31. Clean Redirects & Ultra-Wide 3–4 Line Prompt Input (`templates/home.html`, `templates/index.html`, `static/style.css`)
+- **Decision:**
+  - **Clean Destination & Explore Navigation:**
+    - Stripped all `?prompt=...` query parameters from the 4 destination cards (Tokyo, Santorini, Reykjavik, and El Nido) in `templates/home.html`.
+    - Every destination card and CTA button across the entire site now directs cleanly to root `http://127.0.0.1:8000/` (`href="/"`), preventing unwanted prompt query parameter pollution.
+  - **Ultra-Wide 3–4 Line Input Ergonomics:**
+    - Broadened `.search-capsule-form` from `760px` to **`860px`** for a much more expansive, luxury concierge appearance.
+    - Set `<textarea id="query-input" rows="3">` with a `min-height: 84px`, `max-height: 140px`, and line-height `1.5` so 3 to 4 full lines of detailed travel prompts are visible simultaneously without vertical scrolling or text clipping.
+    - Re-aligned `.capsule-icon` to top-left (`align-self: flex-start; margin-top: 14px; font-size: 1.2rem;`) to pair seamlessly with the multiline input.
+- **Reason:** Ensures clean navigation across the site without URL query string baggage and maximizes visibility for long, rich natural language travel planning prompts.

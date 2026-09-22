@@ -250,20 +250,20 @@ body {
     box-shadow: 0 6px 16px rgba(45, 212, 191, 0.3);
 }
 
-/* Floating White Capsule Search Bar (Wide & Multi-line Support) */
+/* Floating White Capsule Search Bar (Ultra-Wide & 3-4 Line Multi-line Support) */
 .search-capsule-form {
-    max-width: 760px;
+    max-width: 860px;
     width: 100%;
     margin-bottom: 30px;
 }
 
 .search-capsule {
     background: #FFFFFF;
-    border-radius: 26px;
-    padding: 8px 10px 8px 22px;
+    border-radius: 28px;
+    padding: 12px 14px 12px 24px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
     transition: all 0.25s ease;
 }
@@ -274,8 +274,8 @@ body {
 
 .capsule-field {
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 14px;
     flex: 1;
 }
 
@@ -285,8 +285,9 @@ body {
 
 .capsule-icon {
     color: #0D9488;
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     flex-shrink: 0;
+    margin-top: 14px;
 }
 
 .capsule-field textarea,
@@ -295,27 +296,27 @@ body {
     outline: none;
     background: transparent;
     font-family: var(--font-body);
-    font-size: 0.95rem;
+    font-size: 0.98rem;
     font-weight: 500;
     color: #0F172A;
     width: 100%;
     resize: none;
-    min-height: 48px;
-    max-height: 84px;
-    line-height: 1.45;
-    padding: 6px 0;
+    min-height: 84px;
+    max-height: 140px;
+    line-height: 1.5;
+    padding: 10px 0;
 }
 
 .capsule-field textarea::placeholder,
 .capsule-field input::placeholder {
     color: #94A3B8;
     font-weight: 400;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .capsule-divider {
     width: 1px;
-    height: 26px;
+    height: 36px;
     background: #E2E8F0;
 }
 
@@ -323,16 +324,17 @@ body {
     background: #0D9488;
     color: #FFFFFF;
     border: none;
-    padding: 13px 28px;
+    padding: 16px 32px;
     border-radius: 9999px;
     font-family: var(--font-body);
-    font-size: 0.94rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
     white-space: nowrap;
     flex-shrink: 0;
+    align-self: center;
 }
 
 .capsule-btn:hover {
