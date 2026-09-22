@@ -382,3 +382,18 @@ This document logs all major and minor technical decisions, fixes, and architect
     - Set `<textarea id="query-input" rows="3">` with a `min-height: 84px`, `max-height: 140px`, and line-height `1.5` so 3 to 4 full lines of detailed travel prompts are visible simultaneously without vertical scrolling or text clipping.
     - Re-aligned `.capsule-icon` to top-left (`align-self: flex-start; margin-top: 14px; font-size: 1.2rem;`) to pair seamlessly with the multiline input.
 - **Reason:** Ensures clean navigation across the site without URL query string baggage and maximizes visibility for long, rich natural language travel planning prompts.
+
+---
+
+## 32. Harmful Output Crimson Alert Styling & Dynamic Auto-Height Textarea (`templates/index.html`, `static/style.css`, `static/script.js`)
+- **Decision:**
+  - **Red-Colored Harmful Content Output:**
+    - Integrated automatic detection for harmful, unsafe, or off-topic prompts blocked by the safety guardrail (`guardrail_allowed === false` or refusal intent).
+    - Styled harmful refusal output in a high-visibility crimson red container (`.harmful-alert-box` with `border: 2px solid #EF4444`, `background: #FEF2F2`, `#DC2626` pulsating warning badge, and high-contrast red body text).
+    - Configured automatic suppression of specialist sub-tabs (`flights`, `hotels`, `weather`, `budget`, `itinerary`) during a guardrail block to keep the interface clean and focused.
+    - Updated the execution status pill to a red indicator: `🛡️ Safety Guardrail (Blocked)`.
+  - **Dynamic Auto-Adjustable Input Height (No Scrollbars):**
+    - Expanded `.search-capsule-form` from `860px` to **`980px`** with container max-width at `1380px`.
+    - Removed fixed internal scrollbars (`overflow-y: hidden`) and implemented a dynamic auto-resizing engine in `static/script.js` (`autoResizeTextarea`) that recalculates `scrollHeight` on every keystroke, chip click, paste, and reset.
+    - The search capsule naturally expands vertically as long prompts are typed, allowing 2, 4, 6, or more lines to stay completely visible without requiring users to scroll inside the input box.
+- **Reason:** Delivers immediate, unmistakable visual feedback for safety policy blocks and provides a smooth, modern textarea experience that grows with user input.

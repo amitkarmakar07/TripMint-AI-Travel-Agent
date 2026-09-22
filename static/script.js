@@ -37,12 +37,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.getElementById('toast');
 
     let currentThreadId = localStorage.getItem('tripmint_thread_id') || null;
-    let progressInterval = null;
+    // Dynamic Auto-Resizing Textarea without internal scrollbars
+    function autoResizeTextarea(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        const computedHeight = Math.max(56, textarea.scrollHeight);
+        textarea.style.height = computedHeight + 'px';
+    }
+
+    if (queryInput) {
+        queryInput.addEventListener('input', () => autoResizeTextarea(queryInput));
+        queryInput.addEventListener('change', () => autoResizeTextarea(queryInput));
+        setTimeout(() => autoResizeTextarea(queryInput), 60);
+    }
 
     // Handle Quick Prompt Chips
     promptChips.forEach(chip => {
         chip.addEventListener('click', () => {
             queryInput.value = chip.getAttribute('data-prompt');
+            autoResizeTextarea(queryInput);
             queryInput.focus();
         });
     });
@@ -68,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const prompt = card.getAttribute('data-prompt');
             if (prompt) {
                 queryInput.value = prompt;
+                autoResizeTextarea(queryInput);
                 queryInput.focus();
                 queryInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
@@ -366,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset Search Button
     resetBtn.addEventListener('click', () => {
         queryInput.value = '';
+        autoResizeTextarea(queryInput);
         currentThreadId = null;
         localStorage.removeItem('tripmint_thread_id');
         hideElement(resultsSection);
@@ -379,6 +394,53 @@ document.addEventListener('DOMContentLoaded', () => {
         hideElement(approvalCard);
         resThreadId.textContent = data.thread_id ? data.thread_id.substring(0, 12) + '...' : '-';
         resLlmCalls.textContent = data.llm_calls || 0;
+
+        // Check if request was flagged as harmful or blocked by the safety guardrail
+        const isHarmfulOrBlocked = (data.guardrail_allowed === false) ||
+            (data.selected_agents && data.selected_agents.length === 0 && data.answer) ||
+            (data.guardrail_reason && data.guardrail_reason.length > 0 && (!data.selected_agents || data.selected_agents.length === 0)) ||
+            (data.answer && (
+                data.answer.toLowerCase().includes('guardrail blocked') ||
+                data.answer.toLowerCase().includes('blocked by the guardrail') ||
+                data.answer.toLowerCase().includes('only help with travel') ||
+                data.answer.toLowerCase().includes('harmful') ||
+                data.answer.toLowerCase().includes('safety policy')
+            ));
+
+        if (isHarmfulOrBlocked) {
+            resAgentsText.innerHTML = '<span class="status-harmful-badge"><i class="fa-solid fa-triangle-exclamation"></i> Safety Guardrail (Blocked)</span>';
+            const harmfulMessage = data.guardrail_reason || data.answer || 'TripMint AI can only process lawful travel-planning queries. This request was blocked by the safety guardrail.';
+            
+            masterPlanOutput.innerHTML = `
+                <div class="harmful-alert-box">
+                    <div class="harmful-alert-header">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span>SAFETY POLICY TRIGGERED · HARMFUL / OFF-TOPIC REQUEST BLOCKED</span>
+                    </div>
+                    <div class="harmful-alert-body">
+                        ${escapeHtml(harmfulMessage)}
+                    </div>
+                    <div class="harmful-alert-footer">
+                        <i class="fa-solid fa-shield-halved"></i> TripMint AI is strictly governed to plan safe, lawful vacations, flights, hotels, weather forecasts, and itineraries.
+                    </div>
+                </div>
+            `;
+
+            // Hide specialist tabs since they were blocked
+            ['tab-btn-flights', 'tab-btn-hotels', 'tab-btn-weather', 'tab-btn-budget', 'tab-btn-itinerary'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.style.display = 'none';
+            });
+            const masterBtn = document.getElementById('tab-btn-master');
+            if (masterBtn) {
+                masterBtn.style.display = 'inline-flex';
+                masterBtn.click();
+            }
+
+            showElement(resultsSection);
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
 
         if (data.selected_agents && data.selected_agents.length > 0) {
             resAgentsText.textContent = data.selected_agents.join(' ➔ ');
