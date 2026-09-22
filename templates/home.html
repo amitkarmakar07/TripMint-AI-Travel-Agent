@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TripMint - Autonomous AI Travel Concierge</title>
+
+    <!-- Luxury Typography from Google Fonts matching reference designs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 600vh;
+            background-color: #000000;
+            overflow-x: hidden;
+            scroll-behavior: auto;
+            -webkit-font-smoothing: antialiased;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            color: #FFFFFF;
+        }
+
+        /* Sleek scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.4);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(245, 158, 11, 0.8);
+        }
+
+        /* Fixed Fullscreen Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+
+        /* Vignette gradient overlay for luxury depth and legibility */
+        .vignette-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+            background: radial-gradient(
+                circle at 50% 40%,
+                rgba(0, 0, 0, 0) 30%,
+                rgba(0, 0, 0, 0.45) 85%,
+                rgba(0, 0, 0, 0.75) 100%
+            );
+        }
+
+        /* Minimal Preloader */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+        }
+
+        .loader-track {
+            width: 180px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #F59E0B, #FBBF24);
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.8);
+            transition: width 0.15s ease-out;
+        }
+
+        #preloader.loaded {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Shared Fixed Top Bar */
+        .site-top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            padding: 34px 64px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        @media (max-width: 900px) {
+            .site-top-bar {
+                padding: 22px 24px;
+            }
+        }
+
+        .brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            pointer-events: auto;
+        }
+
+        .brand-icon {
+            width: 28px;
+            height: 20px;
+            filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.5));
+        }
+
+        .brand-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.18rem;
+            font-weight: 700;
+            letter-spacing: 0.38em;
+            color: #FFFFFF;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .nav-menu-btn {
+            display: flex;
+            flex-direction: column;
+            gap: 5.5px;
+            cursor: pointer;
+            pointer-events: auto;
+            padding: 6px;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-menu-btn span {
+            display: block;
+            width: 28px;
+            height: 2px;
+            background-color: #FFFFFF;
+            border-radius: 2px;
+            transition: transform 0.25s, opacity 0.25s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        .nav-menu-btn:hover span {
+            background-color: #F59E0B;
+        }
+
+        /* ==========================================================================
+           SECTION 1: HERO OVERLAY (CHAPTER 1: UNDERWATER REEF & MOUNTAINS)
+           ========================================================================== */
+        .hero-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 100px 64px 38px;
+            transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+        }
+
+        @media (max-width: 900px) {
+            .hero-overlay {
+                padding: 85px 24px 28px;
+            }
+        }
+
+        .hero-middle-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        @media (max-width: 840px) {
+            .hero-middle-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 28px;
+            }
+        }
+
+        .hero-content-left {
+            max-width: 680px;
+            pointer-events: auto;
+        }
+
+        .hero-eyebrow {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.36em;
+            color: #FBBF24;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-pretitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.52em;
+            color: #F1F5F9;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75);
+        }
+
+        @media (max-width: 640px) {
+            .hero-pretitle {
+                font-size: 1rem;
+                letter-spacing: 0.35em;
+            }
+        }
+
+        .hero-main-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: clamp(3.8rem, 7.8vw, 6.6rem);
+            font-weight: 600;
+            line-height: 0.94;
+            letter-spacing: -0.015em;
+            color: #FFFFFF;
+            margin: 0 0 14px 0;
+            text-shadow: 0 6px 30px rgba(0, 0, 0, 0.85);
+            display: block;
+        }
+
+        .gold-cap {
+            color: #F59E0B;
+            background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 45%, #D97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-style: italic;
+            padding-right: 2px;
+            display: inline-block;
+            filter: drop-shadow(0 4px 18px rgba(245, 158, 11, 0.45));
+        }
+
+        .hero-submarker {
+            font-size: 0.74rem;
+            font-weight: 600;
+            letter-spacing: 0.42em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 18px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .hero-lead-text {
+            font-size: 0.84rem;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            color: #E2E8F0;
+            text-transform: uppercase;
+            line-height: 1.5;
+            max-width: 440px;
+            margin-bottom: 22px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .gold-highlight {
+            color: #F59E0B;
+            font-weight: 700;
+        }
+
+        .hero-features-list {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .feature-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: #FFFFFF;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            padding: 5px 12px;
+            border-radius: 9999px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+            transition: all 0.25s ease;
+        }
+
+        .feature-item i {
+            color: #F59E0B;
+            font-size: 0.78rem;
+        }
+
+        .feature-item:hover {
+            border-color: #F59E0B;
+            background: rgba(245, 158, 11, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .feature-divider {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+        }
+
+        .hero-right-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            pointer-events: auto;
+            margin-right: 8px;
+        }
+
+        @media (max-width: 840px) {
+            .hero-right-actions {
+                flex-direction: row;
+                margin-right: 0;
+            }
+        }
+
+        .btn-hero-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 12px 26px;
+            border-radius: 9999px;
+            font-size: 0.86rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            color: #FFFFFF;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .btn-hero-pill.explore-btn {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1.5px solid rgba(245, 158, 11, 0.75);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-hero-pill.explore-btn:hover {
+            background: rgba(245, 158, 11, 0.25);
+            border-color: #F59E0B;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-hero-pill.watch-btn {
+            background: rgba(15, 23, 42, 0.35);
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-hero-pill.watch-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .pill-wave {
+            color: #F59E0B;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .hero-bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .bottom-scroll-cue {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .scroll-cue-text {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.24em;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .scroll-cue-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(245, 158, 11, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #F59E0B;
+            font-size: 0.8rem;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+            animation: pulseBounce 2.2s ease-in-out infinite;
+        }
+
+        @keyframes pulseBounce {
+            0%, 100% {
+                transform: translateY(0);
+                box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+            }
+            50% {
+                transform: translateY(4px);
+                box-shadow: 0 0 18px rgba(245, 158, 11, 0.65);
+            }
+        }
+
+        /* ==========================================================================
+           SECTION 2: AI AGENT SHOWCASE OVERLAY (CHAPTER 2: OCEAN APPROACH)
+           COMPACT LAYOUT WITH BALANCED TYPOGRAPHY
+           ========================================================================== */
+        .agent-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 90px 64px 28px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+        }
+
+        @media (max-width: 900px) {
+            .agent-overlay {
+                padding: 80px 24px 24px;
+            }
+        }
+
+        .agent-middle-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.95fr;
+            gap: 28px;
+            align-items: center;
+            width: 100%;
+        }
+
+        @media (max-width: 980px) {
+            .agent-middle-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .agent-left-col {
+            pointer-events: auto;
+            max-width: 520px;
+        }
+
+        .agent-category-tag {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.28em;
+            color: #FBBF24;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: clamp(1.65rem, 2.7vw, 2.25rem);
+            font-weight: 600;
+            line-height: 1.16;
+            letter-spacing: -0.02em;
+            color: #FFFFFF;
+            margin: 0 0 10px 0;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9);
+        }
+
+        .agent-lead-text {
+            font-size: 0.85rem;
+            color: #E2E8F0;
+            line-height: 1.48;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+            max-width: 460px;
+        }
+
+        .agent-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn-primary-white {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #FFFFFF;
+            color: #0F172A;
+            border-radius: 9999px;
+            padding: 10px 22px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        }
+
+        .btn-primary-white:hover {
+            transform: translateY(-2px);
+            background: #F8FAFC;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-primary-white .arrow-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0F172A;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+        }
+
+        .agent-feature-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+            max-width: 440px;
+        }
+
+        .agent-box-card {
+            background: rgba(11, 19, 32, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 14px;
+            padding: 11px 16px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-box-card:hover {
+            border-color: rgba(245, 158, 11, 0.55);
+            background: rgba(16, 26, 44, 0.85);
+            transform: translateX(-3px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.16);
+        }
+
+        .agent-box-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .agent-box-info h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            margin: 0 0 2px 0;
+            letter-spacing: -0.01em;
+        }
+
+        .agent-box-info p {
+            font-size: 0.74rem;
+            color: #94A3B8;
+            line-height: 1.35;
+            margin: 0;
+        }
+
+        .agent-bottom-strip {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            pointer-events: auto;
+            margin-top: 6px;
+        }
+
+        .agent-stats-capsule {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 820px;
+            background: rgba(10, 16, 26, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 9999px;
+            padding: 9px 24px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.64rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #94A3B8;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .stat-cell-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        @media (max-width: 760px) {
+            .agent-stats-capsule {
+                flex-wrap: wrap;
+                border-radius: 20px;
+                gap: 16px;
+                padding: 14px 18px;
+            }
+            .stat-cell-divider {
+                display: none;
+            }
+        }
+
+        /* ==========================================================================
+           SECTION 3: TOUR CITY DESTINATIONS CAROUSEL OVERLAY (EXACT TO REFERENCE 3)
+           ========================================================================== */
+        .destinations-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 100px 64px 44px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+        }
+
+        @media (max-width: 900px) {
+            .destinations-overlay {
+                padding: 85px 20px 30px;
+            }
+        }
+
+        /* 4 Horizontal Luxury Destination Cards Grid */
+        .dest-cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 1340px;
+            margin: 0 auto;
+            pointer-events: auto;
+        }
+
+        @media (max-width: 1100px) {
+            .dest-cards-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dest-cards-row {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+        }
+
+        .dest-card-item {
+            position: relative;
+            height: 340px;
+            border-radius: 26px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+            text-decoration: none;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 22px;
+            background: #0A0F1D;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (max-width: 900px) {
+            .dest-card-item {
+                height: 280px;
+            }
+        }
+
+        .dest-card-item:hover {
+            transform: translateY(-8px);
+            border-color: rgba(245, 158, 11, 0.7);
+            box-shadow: 0 20px 48px rgba(245, 158, 11, 0.25);
+        }
+
+        /* Card Background Image with Smooth Hover Zoom */
+        .dest-card-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1), filter 0.35s ease;
+            filter: brightness(0.92) contrast(1.05);
+        }
+
+        .dest-card-item:hover .dest-card-bg {
+            transform: scale(1.08);
+            filter: brightness(1.02) contrast(1.08);
+        }
+
+        /* Dark Gradient Shading for Text Legibility */
+        .dest-card-gradient {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background: linear-gradient(
+                180deg,
+                rgba(0, 0, 0, 0.35) 0%,
+                rgba(0, 0, 0, 0) 35%,
+                rgba(0, 0, 0, 0.75) 75%,
+                rgba(0, 0, 0, 0.94) 100%
+            );
+            pointer-events: none;
+        }
+
+        /* Top-Left Circular Number Pill (01, 02, 03, 04) */
+        .dest-num-pill {
+            position: relative;
+            z-index: 3;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(10, 16, 26, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            letter-spacing: 0.05em;
+        }
+
+        /* Bottom Content of Card */
+        .dest-card-info {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dest-title-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .dest-city-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.65rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            line-height: 1.1;
+            margin: 0;
+            letter-spacing: -0.01em;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .dest-city-sub {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: #CBD5E1;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        /* Social / Action Circle Icons on Bottom-Left */
+        .dest-card-icons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dest-circle-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-size: 0.74rem;
+            transition: all 0.2s ease;
+        }
+
+        .dest-circle-btn:hover {
+            background: #F59E0B;
+            border-color: #F59E0B;
+            color: #0F172A;
+            transform: scale(1.1);
+        }
+
+        /* Bottom Pill: View All Destinations */
+        .dest-bottom-actions {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            pointer-events: auto;
+            margin-top: 20px;
+        }
+
+        .btn-view-all-dest {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(10, 16, 26, 0.75);
+            border: 1.5px solid rgba(245, 158, 11, 0.75);
+            padding: 13px 34px;
+            border-radius: 9999px;
+            color: #FFFFFF;
+            font-size: 0.92rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 6px 24px rgba(245, 158, 11, 0.22);
+            transition: all 0.25s ease;
+        }
+
+        .btn-view-all-dest:hover {
+            background: rgba(245, 158, 11, 0.22);
+            border-color: #F59E0B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-view-all-dest i {
+            color: #F59E0B;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-view-all-dest:hover i {
+            transform: translateX(4px);
+        }
+
+        /* Invisible scroll track spacer (600vh allows silky 60fps scrubbing across all 3 chapters) */
+        .scroll-track {
+            height: 600vh;
+            width: 100%;
+            position: relative;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Minimal Zero-Text Preloader -->
+    <div id="preloader">
+        <div class="loader-track">
+            <div class="loader-bar" id="loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- Pinned Fullscreen Canvas -->
+    <div id="canvas-container">
+        <canvas id="scroll-canvas"></canvas>
+    </div>
+
+    <!-- Subtle Cinematic Vignette Overlay -->
+    <div class="vignette-overlay"></div>
+
+    <!-- Shared Top Navigation Bar -->
+    <nav class="site-top-bar">
+        <a href="/home" class="brand-wrap">
+            <svg class="brand-icon" viewBox="0 0 28 20" fill="none">
+                <path d="M2 5C6 1 10 9 14 5C18 1 22 9 26 5" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M2 13C6 9 10 17 14 13C18 9 22 17 26 13" stroke="#F59E0B" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+            <span class="brand-name">TRIPMINT</span>
+        </a>
+
+        <button type="button" class="nav-menu-btn" aria-label="Toggle Navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <!-- =======================================================================
+         SECTION 1: HERO OVERLAY (CHAPTER 1: UNDERWATER REEF & MOUNTAINS)
+         ======================================================================= -->
+    <header class="hero-overlay" id="hero-overlay">
+        
+        <div></div>
+
+        <div class="hero-middle-content">
+            <div class="hero-content-left">
+                <div class="hero-eyebrow">
+                    <span>·</span> AUTONOMOUS MULTI-AGENT INTELLIGENCE <span>·</span>
+                </div>
+
+                <div class="hero-pretitle">A I &nbsp;· &nbsp;P O W E R E D</div>
+
+                <h1 class="hero-main-title">
+                    <span class="gold-cap">T</span>ravel Planner
+                </h1>
+
+                <p class="hero-lead-text">
+                    A NEW ERA OF AUTONOMOUS TRAVEL WITH <span class="gold-highlight">CURATED ITINERARIES.</span>
+                </p>
+
+                <div class="hero-features-list">
+                    <span class="feature-item"><i class="fa-solid fa-cloud-sun"></i> LIVE WEATHER</span>
+                    <span class="feature-divider">·</span>
+                    <span class="feature-item"><i class="fa-solid fa-plane-departure"></i> FLIGHT RADAR</span>
+                    <span class="feature-divider">·</span>
+                    <span class="feature-item"><i class="fa-solid fa-hotel"></i> CURATED STAYS</span>
+                    <span class="feature-divider">·</span>
+                    <span class="feature-item"><i class="fa-solid fa-wallet"></i> BUDGET ANALYSIS</span>
+                </div>
+            </div>
+
+            <div class="hero-right-actions">
+                <a href="/" class="btn-hero-pill explore-btn">
+                    <span class="pill-wave">~</span> Explore Trips <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-bottom-bar">
+            <div class="bottom-scroll-cue" id="scroll-cue-btn">
+                <span class="scroll-cue-text">SCROLL TO EXPLORE</span>
+                <div class="scroll-cue-circle">
+                    <i class="fa-solid fa-arrow-down"></i>
+                </div>
+            </div>
+        </div>
+
+    </header>
+
+    <!-- =======================================================================
+         SECTION 2: AI AGENT SHOWCASE OVERLAY (CHAPTER 2: OCEAN APPROACH)
+         ======================================================================= -->
+    <section class="agent-overlay" id="agent-overlay">
+        
+        <div></div>
+
+        <div class="agent-middle-grid">
+            
+            <div class="agent-left-col">
+                <div class="agent-category-tag">
+                    <span>·</span> MULTI-AGENT INTELLIGENCE <span>·</span>
+                </div>
+
+                <h2 class="agent-headline">
+                    Where AI Agents<br>
+                    Shape Every Journey
+                </h2>
+
+                <p class="agent-lead-text">
+                    A synchronized network of specialized AI agents working concurrently to fetch live aviation radar, inspect boutique stays, analyze weather forecasts, and optimize your trip budget.
+                </p>
+
+                <div class="agent-actions-row">
+                    <a href="/" class="btn-primary-white">
+                        Explore Trips <span class="arrow-icon"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="agent-feature-stack">
+                
+                <div class="agent-box-card">
+                    <div class="agent-box-icon">
+                        <i class="fa-solid fa-plane-departure"></i>
+                    </div>
+                    <div class="agent-box-info">
+                        <h3>Flight Radar Agent</h3>
+                        <p>Real-time aviation radar, live flight schedules, layover intelligence and route optimizations.</p>
+                    </div>
+                </div>
+
+                <div class="agent-box-card">
+                    <div class="agent-box-icon">
+                        <i class="fa-solid fa-hotel"></i>
+                    </div>
+                    <div class="agent-box-info">
+                        <h3>Curated Stays Specialist</h3>
+                        <p>Boutique oceanfront resorts, handpicked 5-star villas, and tailored lodging recommendations.</p>
+                    </div>
+                </div>
+
+                <div class="agent-box-card">
+                    <div class="agent-box-icon">
+                        <i class="fa-solid fa-cloud-sun"></i>
+                    </div>
+                    <div class="agent-box-info">
+                        <h3>Weather & Budget Synthesizer</h3>
+                        <p>Live 5-day precision atmospheric forecasts combined with dynamic multi-currency budget breakdowns.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="agent-bottom-strip">
+            <div class="agent-stats-capsule">
+                <div class="stat-cell">
+                    <span class="stat-num">4+</span>
+                    <span class="stat-label">Specialist Agents</span>
+                </div>
+                <div class="stat-cell-divider"></div>
+                <div class="stat-cell">
+                    <span class="stat-num">35s</span>
+                    <span class="stat-label">Live Turnaround</span>
+                </div>
+                <div class="stat-cell-divider"></div>
+                <div class="stat-cell">
+                    <span class="stat-num">100%</span>
+                    <span class="stat-label">Tool Grounded MCP</span>
+                </div>
+                <div class="stat-cell-divider"></div>
+                <div class="stat-cell">
+                    <span class="stat-num">24/7</span>
+                    <span class="stat-label">Autonomous Concierge</span>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- =======================================================================
+         SECTION 3: TOUR CITY DESTINATIONS OVERLAY (CHAPTER 3: RESORT & CITY CAROUSEL)
+         EXACT MATCH TO REFERENCE 3 (4 LUXURY CITY CARDS + VIEW ALL BUTTON)
+         ======================================================================= -->
+    <section class="destinations-overlay" id="dest-overlay">
+        
+        <div></div>
+
+        <!-- 4 Tour City Destination Cards Grid -->
+        <div class="dest-cards-row">
+            
+            <!-- Card 1: Tokyo & Kyoto -->
+            <a href="/?prompt=Plan+a+7+days+luxury+trip+to+Tokyo+and+Kyoto+Japan+with+flights+and+hotels" class="dest-card-item">
+                <img src="/static/dest_tokyo.jpg" alt="Tokyo, Japan" class="dest-card-bg" loading="lazy">
+                <div class="dest-card-gradient"></div>
+                
+                <div class="dest-num-pill">01</div>
+                
+                <div class="dest-card-info">
+                    <div class="dest-title-wrap">
+                        <h3 class="dest-city-title">Tokyo & Kyoto</h3>
+                        <span class="dest-city-sub">Honshu, Japan</span>
+                    </div>
+                    <div class="dest-card-icons">
+                        <span class="dest-circle-btn"><i class="fa-brands fa-facebook-f"></i></span>
+                        <span class="dest-circle-btn"><i class="fa-brands fa-instagram"></i></span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2: Santorini Caldera -->
+            <a href="/?prompt=Plan+a+5+days+romantic+holiday+to+Santorini+Greece+with+cliffside+cave+suites" class="dest-card-item">
+                <img src="/static/dest_santorini.jpg" alt="Santorini, Greece" class="dest-card-bg" loading="lazy">
+                <div class="dest-card-gradient"></div>
+                
+                <div class="dest-num-pill">02</div>
+                
+                <div class="dest-card-info">
+                    <div class="dest-title-wrap">
+                        <h3 class="dest-city-title">Santorini & Oia</h3>
+                        <span class="dest-city-sub">Cyclades, Greece</span>
+                    </div>
+                    <div class="dest-card-icons">
+                        <span class="dest-circle-btn"><i class="fa-brands fa-facebook-f"></i></span>
+                        <span class="dest-circle-btn"><i class="fa-brands fa-instagram"></i></span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 3: Reykjavik & Aurora -->
+            <a href="/?prompt=Plan+a+6+days+winter+adventure+to+Reykjavik+Iceland+with+northern+lights+tours" class="dest-card-item">
+                <img src="/static/dest_iceland.jpg" alt="Reykjavik, Iceland" class="dest-card-bg" loading="lazy">
+                <div class="dest-card-gradient"></div>
+                
+                <div class="dest-num-pill">03</div>
+                
+                <div class="dest-card-info">
+                    <div class="dest-title-wrap">
+                        <h3 class="dest-city-title">Reykjavik & Aurora</h3>
+                        <span class="dest-city-sub">Golden Circle, Iceland</span>
+                    </div>
+                    <div class="dest-card-icons">
+                        <span class="dest-circle-btn"><i class="fa-brands fa-facebook-f"></i></span>
+                        <span class="dest-circle-btn"><i class="fa-brands fa-instagram"></i></span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 4: El Nido Lagoon -->
+            <a href="/?prompt=Plan+a+6+days+tropical+getaway+to+El+Nido+Palawan+Philippines+with+island+hopping" class="dest-card-item">
+                <img src="/static/dest_elnido.jpg" alt="El Nido, Philippines" class="dest-card-bg" loading="lazy">
+                <div class="dest-card-gradient"></div>
+                
+                <div class="dest-num-pill">04</div>
+                
+                <div class="dest-card-info">
+                    <div class="dest-title-wrap">
+                        <h3 class="dest-city-title">El Nido & Palawan</h3>
+                        <span class="dest-city-sub">Bacuit Bay, Philippines</span>
+                    </div>
+                    <div class="dest-card-icons">
+                        <span class="dest-circle-btn"><i class="fa-brands fa-facebook-f"></i></span>
+                        <span class="dest-circle-btn"><i class="fa-brands fa-instagram"></i></span>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Bottom Pill Button (Exact to Reference 3) -->
+        <div class="dest-bottom-actions">
+            <a href="/" class="btn-view-all-dest">
+                View All Destinations <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+    </section>
+
+    <!-- Invisible Scroll Height Provider -->
+    <div class="scroll-track"></div>
+
+    <script>
+        (function() {
+            const TOTAL_FRAMES = 50;
+            const canvas = document.getElementById('scroll-canvas');
+            const ctx = canvas.getContext('2d', { alpha: false });
+            const preloader = document.getElementById('preloader');
+            const loaderBar = document.getElementById('loader-bar');
+            
+            const heroOverlay = document.getElementById('hero-overlay');
+            const agentOverlay = document.getElementById('agent-overlay');
+            const destOverlay = document.getElementById('dest-overlay');
+            const scrollCueBtn = document.getElementById('scroll-cue-btn');
+
+            const images = [];
+            let loadedCount = 0;
+            let targetFrame = 1;
+            let currentFrame = 1;
+            const LERP_FACTOR = 0.085; // Butter-smooth easing factor
+
+            // Click scroll cue to smoothly jump into the agent showcase chapter
+            if (scrollCueBtn) {
+                scrollCueBtn.addEventListener('click', () => {
+                    window.scrollTo({
+                        top: window.innerHeight * 1.8,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+
+            // Pad number helper: 1 -> "001", 50 -> "050"
+            function getFrameSrc(index) {
+                const num = String(index).padStart(3, '0');
+                return `/images/ezgif-frame-${num}.jpg`;
+            }
+
+            // Crisp DPI Canvas Resize with Object-Fit Cover
+            function resizeCanvas() {
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = window.innerWidth * dpr;
+                canvas.height = window.innerHeight * dpr;
+                render();
+            }
+
+            // Draw image covering entire canvas without stretching or distortion
+            function drawCover(img) {
+                if (!img || !img.complete) return;
+                const cw = canvas.width;
+                const ch = canvas.height;
+                const iw = img.naturalWidth || 1920;
+                const ih = img.naturalHeight || 1080;
+
+                const hRatio = cw / iw;
+                const vRatio = ch / ih;
+                const ratio = Math.max(hRatio, vRatio);
+
+                const centerShiftX = (cw - iw * ratio) / 2;
+                const centerShiftY = (ch - ih * ratio) / 2;
+
+                ctx.drawImage(
+                    img,
+                    0, 0, iw, ih,
+                    centerShiftX, centerShiftY, iw * ratio, ih * ratio
+                );
+            }
+
+            function render() {
+                const frameIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(currentFrame)));
+                const img = images[frameIndex];
+                if (img && img.complete) {
+                    drawCover(img);
+                }
+
+                // Scroll progress fraction: 0.0 at top to 1.0 at bottom
+                const progress = Math.max(0, Math.min(1, (currentFrame - 1) / (TOTAL_FRAMES - 1)));
+
+                // CHAPTER 1 (Hero Section - Underwater reef):
+                // Fully visible at 0%, smoothly fades out between 0% and 20%
+                if (heroOverlay) {
+                    const fadeHero = Math.min(1, progress * 5.0);
+                    const heroOpacity = Math.max(0, 1 - fadeHero);
+                    const heroTranslateY = -fadeHero * 60;
+
+                    heroOverlay.style.opacity = heroOpacity.toFixed(3);
+                    heroOverlay.style.transform = `translate3d(0, ${heroTranslateY.toFixed(1)}px, 0)`;
+                    heroOverlay.style.pointerEvents = heroOpacity < 0.15 ? 'none' : 'auto';
+                }
+
+                // CHAPTER 2 (Agent Showcase Section - Ocean approach):
+                // Fades in from 18% to 30%, stays visible through 48%, fades out from 48% to 56%
+                if (agentOverlay) {
+                    let agentOpacity = 0;
+                    let agentTranslateY = 30;
+
+                    if (progress < 0.18) {
+                        agentOpacity = 0;
+                        agentTranslateY = 35;
+                    } else if (progress >= 0.18 && progress <= 0.30) {
+                        const inRatio = (progress - 0.18) / (0.30 - 0.18);
+                        agentOpacity = inRatio;
+                        agentTranslateY = (1 - inRatio) * 35;
+                    } else if (progress > 0.30 && progress <= 0.48) {
+                        agentOpacity = 1;
+                        agentTranslateY = 0;
+                    } else if (progress > 0.48 && progress <= 0.56) {
+                        const outRatio = (progress - 0.48) / (0.56 - 0.48);
+                        agentOpacity = Math.max(0, 1 - outRatio);
+                        agentTranslateY = -outRatio * 35;
+                    } else {
+                        agentOpacity = 0;
+                        agentTranslateY = -35;
+                    }
+
+                    agentOverlay.style.opacity = agentOpacity.toFixed(3);
+                    agentOverlay.style.transform = `translate3d(0, ${agentTranslateY.toFixed(1)}px, 0)`;
+                    agentOverlay.style.pointerEvents = agentOpacity < 0.2 ? 'none' : 'auto';
+                }
+
+                // CHAPTER 3 (Tour City Destinations - Tropical Resort & Lagoon):
+                // Fades in from 54% to 65%, stays visible through 86%, fades out gently between 86% and 96%
+                // allowing the final resort sunset pavilion to be appreciated fully.
+                if (destOverlay) {
+                    let destOpacity = 0;
+                    let destTranslateY = 30;
+
+                    if (progress < 0.54) {
+                        destOpacity = 0;
+                        destTranslateY = 35;
+                    } else if (progress >= 0.54 && progress <= 0.65) {
+                        const inRatio = (progress - 0.54) / (0.65 - 0.54);
+                        destOpacity = inRatio;
+                        destTranslateY = (1 - inRatio) * 35;
+                    } else if (progress > 0.65 && progress <= 0.86) {
+                        destOpacity = 1;
+                        destTranslateY = 0;
+                    } else if (progress > 0.86 && progress <= 0.96) {
+                        const outRatio = (progress - 0.86) / (0.96 - 0.86);
+                        destOpacity = Math.max(0, 1 - outRatio);
+                        destTranslateY = -outRatio * 35;
+                    } else {
+                        destOpacity = 0;
+                        destTranslateY = -35;
+                    }
+
+                    destOverlay.style.opacity = destOpacity.toFixed(3);
+                    destOverlay.style.transform = `translate3d(0, ${destTranslateY.toFixed(1)}px, 0)`;
+                    destOverlay.style.pointerEvents = destOpacity < 0.2 ? 'none' : 'auto';
+                }
+            }
+
+            // Update scroll target with passive listener
+            function updateScrollTarget() {
+                const scrollY = window.scrollY || window.pageYOffset || 0;
+                const maxScroll = (document.documentElement.scrollHeight - window.innerHeight) || 1;
+                const progress = Math.max(0, Math.min(1, scrollY / maxScroll));
+                targetFrame = 1 + progress * (TOTAL_FRAMES - 1);
+            }
+
+            window.addEventListener('scroll', updateScrollTarget, { passive: true });
+            window.addEventListener('resize', resizeCanvas, { passive: true });
+
+            // 60FPS Render Loop with Linear Interpolation (LERP)
+            function tick() {
+                currentFrame += (targetFrame - currentFrame) * LERP_FACTOR;
+                render();
+                requestAnimationFrame(tick);
+            }
+
+            // Preload all 50 frames into memory
+            for (let i = 1; i <= TOTAL_FRAMES; i++) {
+                const img = new Image();
+                img.src = getFrameSrc(i);
+                img.onload = () => {
+                    loadedCount++;
+                    if (loaderBar) {
+                        loaderBar.style.width = `${Math.round((loadedCount / TOTAL_FRAMES) * 100)}%`;
+                    }
+
+                    // Immediately draw frame 1 as soon as available
+                    if (i === 1) {
+                        render();
+                    }
+
+                    if (loadedCount === TOTAL_FRAMES) {
+                        setTimeout(() => {
+                            if (preloader) preloader.classList.add('loaded');
+                        }, 120);
+                    }
+                };
+                images[i] = img;
+            }
+
+            // Initialize
+            resizeCanvas();
+            updateScrollTarget();
+            requestAnimationFrame(tick);
+        })();
+    </script>
+</body>
+</html>

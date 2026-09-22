@@ -59,6 +59,12 @@ app.mount(
     name="static"
 )
 
+app.mount(
+    "/images",
+    StaticFiles(directory=str(BASE_DIR / "images")),
+    name="images"
+)
+
 templates = Jinja2Templates(
     directory=str(BASE_DIR / "templates")
 )
@@ -81,6 +87,15 @@ async def home(request: Request):
         request=request,
         name="index.html",
         context={"name": "TripMint"}
+    )
+
+
+@app.get("/home", response_class=HTMLResponse)
+async def home_scroll(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="home.html",
+        context={}
     )
 
 

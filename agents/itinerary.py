@@ -30,7 +30,7 @@ def itinerary_agent(state: TravelState):
       - **Morning:** [Activities & Sightseeing]
       - **Afternoon:** [Lunch & Highlights]
       - **Evening:** [Dinner & Nightlife / Relaxation]
-      - **Highlights & Notes:** [Essential tips, travel advice, or local etiquette]
+      - **Highlights:** [Essential tips, travel advice, or local etiquette]
     - Keep each day concise, practical, and highly engaging.
     """
 

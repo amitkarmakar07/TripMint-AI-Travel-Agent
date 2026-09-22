@@ -47,6 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Enter key submits form from textarea (Shift+Enter creates a newline)
+    if (queryInput) {
+        queryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (typeof travelForm.requestSubmit === 'function') {
+                    travelForm.requestSubmit();
+                } else {
+                    travelForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            }
+        });
+    }
+
     // Handle Destination Showcase Cards
     const destinationCards = document.querySelectorAll('.destination-card, .destination-trio-card');
     destinationCards.forEach(card => {
@@ -145,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
         hideElement(approvalCard);
         showElement(loadingSection);
         submitBtn.disabled = true;
+
+        // Auto-scroll down smoothly to the output/loading section immediately
+        loadingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
         document.querySelectorAll('.step-item').forEach(s => s.className = 'step-item');
         setStepActive('step-supervisor', 'Connecting to TripMint AI stream...', '10%');
@@ -247,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const draftContent = data.itinerary || data.answer || 'Draft itinerary ready for review.';
         draftItineraryPreview.innerHTML = renderInteractiveItinerary(draftContent, 'draft');
         approvalFeedbackInput.value = '';
-        approvalCard.scrollIntoView({ behavior: 'smooth' });
+        approvalCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // Approve Button Action
@@ -414,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         showElement(resultsSection);
-        resultsSection.scrollIntoView({ behavior: 'smooth' });
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function simulateProgress() {
@@ -491,28 +508,36 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!cleanLine) return;
 
             // Check for Morning, Afternoon, Evening, Stay/Highlights
-            const slotMatch = cleanLine.match(/^(?:\*\*)?(Morning|Afternoon|Evening|Night|Stay|Highlights?|Notes?|Tips?|Accommodation)[:\s\*\-]+(.*)$/i);
+            const slotMatch = cleanLine.match(/^(?:\*\*)?(Morning|Afternoon|Evening|Night|Stay|Highlights?(?:\s*(?:&|and)\s*Notes?)?|Notes?|Tips?|Accommodation)(?:\*\*)?[:\s\*\-]+(.*)$/i);
             if (slotMatch) {
                 foundSpecificSlot = true;
-                const slotType = slotMatch[1].toLowerCase();
-                const slotContent = slotMatch[2].replace(/^\*+|\*+$/g, '').trim();
+                const rawSlotType = slotMatch[1].toLowerCase();
+                let slotContent = slotMatch[2] ? slotMatch[2].trim() : '';
+
+                // Clean out any residual '& Notes:', '& Note:', leading/trailing asterisks or colons
+                slotContent = slotContent.replace(/^(&|and)?\s*notes?[:\s\*\-]*/i, '');
+                slotContent = slotContent.replace(/^[\s\*\:\-]+/, '').replace(/[\s\*\-]+$/, '').trim();
 
                 let iconClass = 'fa-solid fa-clock';
                 let typeClass = 'morning';
                 let label = slotMatch[1];
 
-                if (slotType.includes('morning')) {
+                if (rawSlotType.includes('morning')) {
                     iconClass = 'fa-solid fa-sun';
                     typeClass = 'morning';
-                } else if (slotType.includes('afternoon')) {
+                    label = 'Morning';
+                } else if (rawSlotType.includes('afternoon')) {
                     iconClass = 'fa-solid fa-cloud-sun';
                     typeClass = 'afternoon';
-                } else if (slotType.includes('evening') || slotType.includes('night')) {
+                    label = 'Afternoon';
+                } else if (rawSlotType.includes('evening') || rawSlotType.includes('night')) {
                     iconClass = 'fa-solid fa-moon';
                     typeClass = 'evening';
+                    label = 'Evening';
                 } else {
                     iconClass = 'fa-solid fa-star';
                     typeClass = 'highlight';
+                    label = 'Highlights';
                 }
 
                 slotsHtml += `

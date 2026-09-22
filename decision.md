@@ -262,3 +262,84 @@ This document logs all major and minor technical decisions, fixes, and architect
     - Leveraged existing `GROQ_API_KEY` to configure a cross-provider fallback model using `ChatGroq(model="openai/gpt-oss-120b")`.
     - Chained `llm` with `.with_fallbacks([primary_light_llm, groq_model])` and `light_llm` with `.with_fallbacks([groq_model])`, ensuring 100% service uptime even in the event of OpenAI downtime or rate limiting.
 - **Reason:** Prevents API key quota exhaustion from automated scripts, protects backend memory, and guarantees zero-downtime trip generation using ultra-fast Groq LPU inference as a safety net.
+
+---
+
+## 25. UI Aesthetics Refresh: Hero Floating Glow, Greenish-White Palette & Clean Highlights (`style.css`, `script.js`, `itinerary.py`)
+- **Decision:**
+  - **Hero Capabilities Badges & Floating Glowing Frame:**
+    - Replaced the generic subtitle with point-wise capabilities badges (`Live Weather`, `Flight Schedules`, `Curated Stays`, `Budget Feasibility`, `Day-by-Day Itineraries`).
+    - Added `@keyframes heroFloatGlow` with smooth 5.5s floating vertical movement and a breathing cyan-emerald box-shadow and border glow to `.hero-photo-frame`.
+  - **Auto-Scroll Behavior:**
+    - On search form submission, user is smoothly scrolled directly into `#loading-section`.
+    - On plan completion, smoothly scrolls into `#results-section` or `#approval-card`.
+  - **Itinerary Highlights Sanitization:**
+    - Updated prompt in [`agents/itinerary.py`](file:///d:/DATA%20SCIENCE%20PROJECT%20FOR%20RESUME/TripMint/agents/itinerary.py) from `- **Highlights & Notes:**` to `- **Highlights:**`.
+    - Enhanced `parseDayTimeSlots()` in [`static/script.js`](file:///d:/DATA%20SCIENCE%20PROJECT%20FOR%20RESUME/TripMint/static/script.js) with regex stripping any stray `& Notes:`, `& Note:`, and markdown asterisks `*`.
+  - **Greenish-White Luxury Palette Transition:**
+    - Replaced all yellowish/amber elements with a crisp emerald-mint white palette (`#F8FDF9`, `#F0FDF4`, border `#D1FAE5`, badges `#D1FAE5`/`#065F46`).
+- **Reason:** Aligns visual aesthetics with modern luxury travel standards, eliminates visual artifacts in itinerary highlights, and provides fluid, guided user navigation.
+
+---
+
+## 26. Zero-Text Full-Screen Canvas Scroll Animation (`/home`, `templates/home.html`, `app.py`)
+- **Decision:**
+  - Mounted `/images` directory in [`app.py`](file:///d:/DATA%20SCIENCE%20PROJECT%20FOR%20RESUME/TripMint/app.py) using `StaticFiles` pointing to `BASE_DIR / "images"`.
+  - Added dedicated `/home` route serving [`templates/home.html`](file:///d:/DATA%20SCIENCE%20PROJECT%20FOR%20RESUME/TripMint/templates/home.html).
+  - Built an Apple-grade 60 FPS HTML5 `<canvas>` scroll-scrubbing engine:
+    - Preloads all 50 high-definition frames (`ezgif-frame-001.jpg` to `ezgif-frame-050.jpg`) directly into memory.
+    - Implemented Linear Interpolation (LERP) easing (`factor = 0.085`) via `requestAnimationFrame` to eliminate trackpad/mouse-wheel jitter.
+    - Utilized aspect-ratio preserving `object-fit: cover` math with high-DPI retina scaling.
+    - Strictly adhered to a zero-text aesthetic for pure, cinematic visual immersion from coral reefs to mountain coastal resorts.
+- **Reason:** Provides an ultra-smooth, responsive, and cinematic scroll animation website experience without lag or stutter.
+
+---
+
+## 27. Dual-Section Scroll Architecture: AI Agent Showcase Overlay (`templates/home.html`)
+- **Decision:**
+  - Designed and integrated a second distinct scroll section (`#agent-overlay`) matching the layout of the second reference image.
+  - **Left Column:** High-impact modern headline (*"Where AI Agents Shape Every Journey"*), lead paragraph describing concurrent agent execution, and two CTA buttons (`Explore Trips ↗` and `Watch Agent`).
+  - **Right Column:** 3 stacked glassmorphic feature cards with golden glowing icons:
+    - *Flight Radar Agent*: Real-time aviation tracking, direct routes & layovers.
+    - *Curated Stays Specialist*: Boutique resorts, verified 5-star villas & lodging recommendations.
+    - *Weather & Budget Synthesizer*: 5-day precision atmospheric forecasts & dynamic budget breakdowns.
+  - **Bottom Stats Strip:** 4-column glass capsule pill highlighting 4+ Specialist Agents, 35s Live Turnaround, 100% Tool-Grounded MCP, and 24/7 Autonomous Concierge.
+  - **Scroll-Driven Keyframing:** Configured seamless interpolation transitions where Section 1 smoothly fades out (0%–24%), Section 2 emerges during the ocean flight (24%–76%), and gracefully fades before entering the luxury sunset resort pavilion (76%–94%).
+- **Reason:** Delivers a multi-chapter storytelling website experience that communicates the power of TripMint's multi-agent architecture while scrubbing the video canvas.
+
+---
+
+## 28. Tri-Chapter Scroll Architecture: Tour City Destinations Carousel (`templates/home.html`)
+- **Decision:**
+  - Integrated Chapter 3: **Tour City Destinations Showcase** (`#dest-overlay`) matching the layout of the third reference image.
+  - Generated and included high-resolution photography for **Tokyo & Kyoto** alongside **Santorini**, **Reykjavik**, and **El Nido**.
+  - Engineered 4 luxury cards featuring:
+    - Circular number pills (`01`, `02`, `03`, `04`).
+    - Smooth background zoom on hover (`scale(1.08)`).
+    - High-contrast serif headlines in `Cormorant Garamond` and tracked location tags.
+    - Glass social and action circle icons on the bottom-left of each card.
+  - Added the bottom gold-accented pill button: `View All Destinations →` linking to the planner.
+  - Formulated a 3-chapter scroll trajectory across `600vh`:
+    - **Chapter 1 (0%–20%):** Coral Reef & Luxury Hero Title.
+    - **Chapter 2 (20%–50%):** Ocean Flight & AI Agent Architecture.
+    - **Chapter 3 (50%–90%):** Island Approach & Tour City Destinations.
+    - **Finale (90%–100%):** Sunset Luxury Resort Pavilion.
+- **Reason:** Creates a complete, cohesive, luxury travel agency scroll experience showcasing real destination imagery without page reloads.
+
+---
+
+## 29. UI Polish: Hero Cleanup, Section 2 Compaction & Multiline Search Input (`templates/home.html`, `templates/index.html`, `static/style.css`, `static/script.js`)
+- **Decision:**
+  - **Hero Section Cleanup:**
+    - Removed the "Watch Agent" button; linked "Explore Trips" directly to `http://127.0.0.1:8000/` (`href="/"`).
+    - Removed social icons, phone number, and global resort pill bar from the bottom bar; retained the clean animated scroll-cue indicator aligned on the bottom right.
+    - Removed the "2026 · PARALLEL · EDITION" submarker to keep the hero minimalist and hyper-focused.
+  - **AI Agent Showcase Section 2 Compaction:**
+    - Reduced the font size (`clamp(1.65rem, 2.7vw, 2.25rem)`) and weight (`600`) of *"Where AI Agents Shape Every Journey"*.
+    - Removed the "Watch Agent" button, maintaining the direct link to the planner (`href="/"`).
+    - Compacted padding, gaps, icon badges, and line heights across the 3 right stacked agent cards and the bottom 4-column stats capsule.
+  - **Main Concierge Input Expansion:**
+    - Converted `#query-input` from a single-line input to an ergonomic multiline `<textarea>` (supporting 2–3 visible lines).
+    - Widened `.search-capsule-form` to `760px` with a `26px` rounded capsule and custom teal focus rings.
+    - Added Enter-key listener (Shift+Enter for newline, Enter to submit immediately) in `static/script.js`.
+- **Reason:** Satisfies user feedback for a cleaner, more proportional visual hierarchy and enhances the travel prompt typing experience for multi-line natural language queries.

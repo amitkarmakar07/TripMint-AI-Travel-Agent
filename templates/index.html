@@ -41,28 +41,29 @@
             <!-- Left Column: Content & Search -->
             <div class="hero-green-left">
                 <h1 class="hero-green-title">
-                    Live Your<br>
-                    <span class="hero-green-accent">Adventure.</span>
+                    AI Travel Planner<br>
+                    <span class="hero-green-accent">System.</span>
                 </h1>
-                <p class="hero-green-subtitle">
-                    Explore breathtaking places and create unforgettable memories around the world.
-                </p>
+                
+                <!-- Live Agent Capabilities Badges -->
+                <div class="hero-capabilities-pills">
+                    <span class="hero-cap-pill"><i class="fa-solid fa-cloud-sun"></i> Live Weather</span>
+                    <span class="hero-cap-pill"><i class="fa-solid fa-plane-departure"></i> Flight Schedules</span>
+                    <span class="hero-cap-pill"><i class="fa-solid fa-hotel"></i> Curated Stays</span>
+                    <span class="hero-cap-pill"><i class="fa-solid fa-wallet"></i> Budget Feasibility</span>
+                    <span class="hero-cap-pill"><i class="fa-solid fa-calendar-days"></i> Day-by-Day Itineraries</span>
+                </div>
 
                 <!-- Floating Rounded Search Capsule -->
                 <form id="travel-form" class="search-capsule-form">
                     <div class="search-capsule">
                         <div class="capsule-field where-field">
                             <i class="fa-solid fa-location-dot capsule-icon"></i>
-                            <input 
-                                type="text" 
+                            <textarea 
                                 id="query-input" 
-                                placeholder="Where to? (e.g. 6-day luxury trip to Sofia & Bansko Bulgaria)" 
-                                required autocomplete="off">
-                        </div>
-                        <div class="capsule-divider"></div>
-                        <div class="capsule-field date-field">
-                            <i class="fa-regular fa-calendar capsule-icon"></i>
-                            <input type="text" id="date-input" placeholder="Date Range" readonly value="Flexible Dates">
+                                rows="2"
+                                placeholder="Where to? (e.g. 5-day luxury trip to Tokyo with flights and hotels under ₹1.5 Lakh)" 
+                                required autocomplete="off"></textarea>
                         </div>
                         <button type="submit" id="submit-btn" class="capsule-btn">
                             <span id="btn-text">Search</span>
